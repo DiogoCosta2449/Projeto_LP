@@ -32,3 +32,4 @@ tabuleiro = criar_tabuleiro()
 sucesso, mensagem = colocar_peca(tabuleiro, 'b', 2, 'X')
 print(mensagem)
 imprimir_tabuleiro(tabuleiro)
+# qualquer coisa

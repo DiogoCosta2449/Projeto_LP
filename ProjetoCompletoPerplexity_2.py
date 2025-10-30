@@ -1,6 +1,4 @@
-# ===========================
 # TAD posicao
-# ===========================
 
 def cria_posicao(c, l):
     """cria_posicao: str × str → posicao"""

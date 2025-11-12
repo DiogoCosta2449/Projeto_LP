@@ -214,40 +214,31 @@ def obter_posicoes_jogador(t, j):
 def obter_movimento_manual(t, j):
     pecas_jogador = len(obter_posicoes_jogador(t, j))
     if pecas_jogador < 3:
-        while True:
-            entrada = input("Turno do jogador. Escolha uma posicao: ")
-            if len(entrada) != 2 or entrada[0] not in ['a', 'b', 'c'] or entrada[1] not in ['1', '2', '3']:
-                print("Escolha inválida! Use casas do tabuleiro como a1, b2, c3.")
-                continue
-            pos = cria_posicao(entrada[0], entrada[1])
-            if not eh_posicao_livre(t, pos):
-                print("Casa ocupada! Escolha uma posição livre.")
-                continue
-            return (pos,)
+        entrada = input("Turno do jogador. Escolha uma posicao: ")
+        if len(entrada) != 2 or entrada[0] not in ['a', 'b', 'c'] or entrada[1] not in ['1', '2', '3']:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        pos = cria_posicao(entrada[0], entrada[1])
+        if not eh_posicao_livre(t, pos):
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        return (pos,)
     else:
-        while True:
-            entrada = input("Turno do jogador. Escolha um movimento: ")
-            if len(entrada) != 4:
-                print("Escolha inválida! Use quatro caracteres, ex: a1b2.")
-                continue
-            try:
-                pos_origem = cria_posicao(entrada[0], entrada[1])
-                pos_destino = cria_posicao(entrada[2], entrada[3])
-            except:
-                print("Escolha inválida! Use casas existentes.")
-                continue
-            if obter_peca(t, pos_origem) != j:
-                print("Só pode mover as suas próprias peças!")
-                continue
-            if not posicoes_iguais(pos_origem, pos_destino) and not eh_posicao_livre(t, pos_destino):
-                print("Destino ocupado! Escolha uma posição livre adjacente.")
-                continue
-            if not posicoes_iguais(pos_origem, pos_destino):
-                adjacentes = obter_posicoes_adjacentes(pos_origem)
-                if pos_destino not in adjacentes:
-                    print("Movimento inválido! Origem e destino devem ser adjacentes.")
-                    continue
-            return (pos_origem, pos_destino)
+        entrada = input("Turno do jogador. Escolha um movimento: ")
+        if len(entrada) != 4:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        try:
+            pos_origem = cria_posicao(entrada[0], entrada[1])
+            pos_destino = cria_posicao(entrada[2], entrada[3])
+        except:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        if obter_peca(t, pos_origem) != j:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        if not posicoes_iguais(pos_origem, pos_destino) and not eh_posicao_livre(t, pos_destino):
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        if not posicoes_iguais(pos_origem, pos_destino):
+            adjacentes = obter_posicoes_adjacentes(pos_origem)
+            if pos_destino not in adjacentes:
+                raise ValueError('obter_movimento_manual: escolha invalida')
+        return (pos_origem, pos_destino)
 
 def obter_movimento_auto(t, j, dificuldade):
     pecas_jogador = len(obter_posicoes_jogador(t, j))

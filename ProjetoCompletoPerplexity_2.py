@@ -1,6 +1,7 @@
 # ===========================
 # TAD posicao
 # ===========================
+# Teste Teste
 
 def cria_posicao(c, l):
     if not isinstance(c, str) or not isinstance(l, str) or \

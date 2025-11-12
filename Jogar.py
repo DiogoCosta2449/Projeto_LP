@@ -1,7 +1,8 @@
-# ===========================
-# TAD posicao
-# ===========================
+import tkinter as tk
+from tkinter import messagebox
 
+# ===========================
+# TAD posicao (mantem idêntico)
 def cria_posicao(c, l):
     if not isinstance(c, str) or not isinstance(l, str) or \
        c not in ['a', 'b', 'c'] or l not in ['1', '2', '3']:
@@ -49,8 +50,6 @@ def obter_posicoes_adjacentes(p):
 
 # ===========================
 # TAD peca
-# ===========================
-
 def cria_peca(s):
     if not isinstance(s, str) or s not in ['X', 'O', ' ']:
         raise ValueError('cria_peca: argumento invalido')
@@ -78,8 +77,6 @@ def peca_para_inteiro(j):
 
 # ===========================
 # TAD tabuleiro
-# ===========================
-
 def cria_tabuleiro():
     tabuleiro = {}
     for c in ['a', 'b', 'c']:
@@ -142,37 +139,6 @@ def eh_posicao_livre(t, p):
 def tabuleiros_iguais(t1, t2):
     return eh_tabuleiro(t1) and eh_tabuleiro(t2) and t1 == t2
 
-def tabuleiro_para_str(t):
-    resultado = "   a   b   c\n"
-    for i, l in enumerate(['1', '2', '3']):
-        linha_peca = f"{l} "
-        for j, c in enumerate(['a', 'b', 'c']):
-            peca = peca_para_str(t[(c, l)])
-            linha_peca += peca
-            if j < 2:
-                linha_peca += "-"
-        resultado += linha_peca
-        if i < 2:
-            if i == 0:
-                resultado += "\n   | \\ | / |\n"
-            else:
-                resultado += "\n   | / | \\ |\n"
-    return resultado
-
-def tuplo_para_tabuleiro(tuplo):
-    tabuleiro = {}
-    for i, linha in enumerate(tuplo):
-        l = str(i + 1)
-        for j, valor in enumerate(linha):
-            c = ['a', 'b', 'c'][j]
-            if valor == 1:
-                tabuleiro[(c, l)] = 'X'
-            elif valor == -1:
-                tabuleiro[(c, l)] = 'O'
-            else:
-                tabuleiro[(c, l)] = ' '
-    return tabuleiro
-
 def _verificar_ganhador(t, jogador):
     for l in ['1', '2', '3']:
         if all(t[(c, l)] == jogador for c in ['a', 'b', 'c']):
@@ -207,46 +173,8 @@ def obter_posicoes_jogador(t, j):
     return tuple(posicoes_jogador)
 
 # ===========================
-# Funções Adicionais
+# Funções de movimento e IA
 # ===========================
-
-def obter_movimento_manual(t, j):
-    pecas_jogador = len(obter_posicoes_jogador(t, j))
-    if pecas_jogador < 3:
-        while True:
-            entrada = input("Turno do jogador. Escolha uma posicao: ")
-            if len(entrada) != 2 or entrada[0] not in ['a', 'b', 'c'] or entrada[1] not in ['1', '2', '3']:
-                print("Escolha inválida! Use casas do tabuleiro como a1, b2, c3.")
-                continue
-            pos = cria_posicao(entrada[0], entrada[1])
-            if not eh_posicao_livre(t, pos):
-                print("Casa ocupada! Escolha uma posição livre.")
-                continue
-            return (pos,)
-    else:
-        while True:
-            entrada = input("Turno do jogador. Escolha um movimento: ")
-            if len(entrada) != 4:
-                print("Escolha inválida! Use quatro caracteres, ex: a1b2.")
-                continue
-            try:
-                pos_origem = cria_posicao(entrada[0], entrada[1])
-                pos_destino = cria_posicao(entrada[2], entrada[3])
-            except:
-                print("Escolha inválida! Use casas existentes.")
-                continue
-            if obter_peca(t, pos_origem) != j:
-                print("Só pode mover as suas próprias peças!")
-                continue
-            if not posicoes_iguais(pos_origem, pos_destino) and not eh_posicao_livre(t, pos_destino):
-                print("Destino ocupado! Escolha uma posição livre adjacente.")
-                continue
-            if not posicoes_iguais(pos_origem, pos_destino):
-                adjacentes = obter_posicoes_adjacentes(pos_origem)
-                if pos_destino not in adjacentes:
-                    print("Movimento inválido! Origem e destino devem ser adjacentes.")
-                    continue
-            return (pos_origem, pos_destino)
 
 def obter_movimento_auto(t, j, dificuldade):
     pecas_jogador = len(obter_posicoes_jogador(t, j))
@@ -438,76 +366,177 @@ def _avaliar_sequencia(seq, jogador, adversario):
     return pontuacao
 
 # ===========================
-# Função Principal
+# Interface gráfica com Tkinter
 # ===========================
 
-def moinho(jogador_humano, dificuldade):
-    if jogador_humano not in ['[X]', '[O]'] or dificuldade not in ['facil', 'normal', 'dificil']:
-        raise ValueError('moinho: argumentos invalidos')
-    peca_humano = jogador_humano[1]
-    peca_computador = 'O' if peca_humano == 'X' else 'X'
-    print(f"Bem-vindo ao JOGO DO MOINHO. Nivel de dificuldade {dificuldade}.")
-    t = cria_tabuleiro()
-    print(tabuleiro_para_str(t))
-    turno_atual = 'X'
-    while True:
-        if turno_atual == peca_humano:
-            movimento = obter_movimento_manual(t, peca_humano)
-            if len(movimento) == 1:
-                coloca_peca(t, peca_humano, movimento[0])
+class JogoMoinhoApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Jogo do Moinho")
+        self.geometry("400x450")
+        self.resizable(False, False)
+
+        self.tabuleiro = cria_tabuleiro()
+        self.jogador_humano = None
+        self.peca_humano = None
+        self.peca_computador = None
+        self.dificuldade = None
+        self.turno_atual = 'X'
+        self.fase_colocacao = True
+        self.botao_selecionado = None
+
+        self.criar_widgets()
+        self.pedir_configuracao()
+
+    def criar_widgets(self):
+        self.info_label = tk.Label(self, text="Bem-vindo ao Jogo do Moinho", font=("Arial", 14))
+        self.info_label.pack(pady=10)
+
+        self.buttons_frame = tk.Frame(self)
+        self.buttons_frame.pack()
+
+        # Mapa de posições para acesso rápido  buttons[(c,l)]
+        self.buttons = {}
+        posicoes = [('a', '1'), ('b', '1'), ('c', '1'),
+                    ('a', '2'), ('b', '2'), ('c', '2'),
+                    ('a', '3'), ('b', '3'), ('c', '3')]
+        for i, pos in enumerate(posicoes):
+            btn = tk.Button(self.buttons_frame, text='', font=("Arial", 18), width=4, height=2,
+                            command=lambda p=pos: self.botao_clicado(p))
+            # grid com 3 colunas e 3 linhas
+            btn.grid(row=i//3, column=i%3, padx=5, pady=5)
+            self.buttons[pos] = btn
+
+        self.status_label = tk.Label(self, text="A aguardar configuração...", font=("Arial", 12))
+        self.status_label.pack(pady=10)
+
+    def pedir_configuracao(self):
+        self.info_label.config(text="Escolha o seu jogador (X começa)")
+        self.botao_jx = tk.Button(self, text="Jogador X", command=lambda: self.iniciar_jogo('[X]'))
+        self.botao_jo = tk.Button(self, text="Jogador O", command=lambda: self.iniciar_jogo('[O]'))
+        self.botao_jx.pack(pady=5)
+        self.botao_jo.pack(pady=5)
+
+    def iniciar_jogo(self, jogador):
+        self.jogador_humano = jogador
+        self.peca_humano = jogador[1]
+        self.peca_computador = 'O' if self.peca_humano == 'X' else 'X'
+        self.botao_jx.pack_forget()
+        self.botao_jo.pack_forget()
+        self.info_label.config(text=f"Jogador: {self.jogador_humano}")
+        self.pedir_dificuldade()
+
+    def pedir_dificuldade(self):
+        self.info_label.config(text="Escolha a dificuldade")
+        self.botao_facil = tk.Button(self, text="Fácil", command=lambda: self.set_dificuldade('facil'))
+        self.botao_normal = tk.Button(self, text="Normal", command=lambda: self.set_dificuldade('normal'))
+        self.botao_dificil = tk.Button(self, text="Difícil", command=lambda: self.set_dificuldade('dificil'))
+        self.botao_facil.pack(pady=3)
+        self.botao_normal.pack(pady=3)
+        self.botao_dificil.pack(pady=3)
+
+    def set_dificuldade(self, nivel):
+        self.dificuldade = nivel
+        self.botao_facil.pack_forget()
+        self.botao_normal.pack_forget()
+        self.botao_dificil.pack_forget()
+        self.status_label.config(text=f"Dificuldade: {self.dificuldade}")
+        self.info_label.config(text="Comece a jogar! Coloque peças no tabuleiro.")
+        self.atualizar_tabuleiro()
+
+        if self.peca_computador == 'X':
+            self.jogada_computador()
+
+    def atualizar_tabuleiro(self):
+        for pos, btn in self.buttons.items():
+            peca = obter_peca(self.tabuleiro, pos)
+            if peca == ' ':
+                btn.config(text='', state=tk.NORMAL, bg='SystemButtonFace')
+            elif peca == 'X':
+                btn.config(text='X', fg='blue', state=tk.DISABLED, bg='white')
             else:
-                move_peca(t, movimento[0], movimento[1])
-            print(tabuleiro_para_str(t))
+                btn.config(text='O', fg='red', state=tk.DISABLED, bg='white')
+
+    def botao_clicado(self, pos):
+        if self.fase_colocacao:
+            if not eh_posicao_livre(self.tabuleiro, pos):
+                messagebox.showwarning("Posição ocupada", "Esta posição já está ocupada!")
+                return
+            if self.peca_humano != self.turno_atual:
+                messagebox.showinfo("Aguarde", "Não é o seu turno!")
+                return
+            coloca_peca(self.tabuleiro, self.peca_humano, pos)
+            self.atualizar_tabuleiro()
+            vencedor = obter_ganhador(self.tabuleiro)
+            if vencedor != ' ':
+                messagebox.showinfo("Fim de Jogo", f"Jogador {vencedor} venceu!")
+                self.desativar_tabuleiro()
+                return
+            self.mudar_turno()
+            self.jogada_computador()
         else:
-            print(f"Turno do computador ({dificuldade}):")
-            movimento = obter_movimento_auto(t, peca_computador, dificuldade)
-            if len(movimento) == 1:
-                coloca_peca(t, peca_computador, movimento[0])
+            if self.botao_selecionado is None:
+                if obter_peca(self.tabuleiro, pos) == self.peca_humano:
+                    self.botao_selecionado = pos
+                    self.buttons[pos].config(bg='yellow')
+                else:
+                    messagebox.showwarning("Peça inválida", "Selecione uma das suas peças primeiro!")
             else:
-                move_peca(t, movimento[0], movimento[1])
-            print(tabuleiro_para_str(t))
-        ganhador = obter_ganhador(t)
-        if ganhador != ' ':
-            return peca_para_str(ganhador)
-        turno_atual = 'O' if turno_atual == 'X' else 'X'
+                if pos == self.botao_selecionado:
+                    # Deseleciona a peça
+                    self.buttons[self.botao_selecionado].config(bg='SystemButtonFace')
+                    self.botao_selecionado = None
+                else:
+                    if pos in obter_posicoes_adjacentes(self.botao_selecionado) and eh_posicao_livre(self.tabuleiro, pos):
+                        move_peca(self.tabuleiro, self.botao_selecionado, pos)
+                        self.atualizar_tabuleiro()
+                        vencedor = obter_ganhador(self.tabuleiro)
+                        if vencedor != ' ':
+                            messagebox.showinfo("Fim de Jogo", f"Jogador {vencedor} venceu!")
+                            self.desativar_tabuleiro()
+                            return
+                        self.botao_selecionado = None
+                        self.mudar_turno()
+                        self.jogada_computador()
+                    else:
+                        messagebox.showwarning("Movimento inválido", "Movimento inválido para essa peça.")
+                        self.buttons[self.botao_selecionado].config(bg='SystemButtonFace')
+                        self.botao_selecionado = None
 
-# ===========================
-# Iniciar o jogo
-# ===========================
-if __name__ == "__main__":
-    print("\n===== JOGO DO MOINHO =====\n")
-    print("Escolha o seu jogador:")
-    print("1 - X (começa primeiro)")
-    print("2 - O (computador começa)")
+    def mudar_turno(self):
+        self.turno_atual = 'O' if self.turno_atual == 'X' else 'X'
+        if self.turno_atual == 'X':
+            self.status_label.config(text="Turno do jogador X")
+        else:
+            self.status_label.config(text="Turno do jogador O")
+        self.fase_colocacao = (len(obter_posicoes_jogador(self.tabuleiro, 'X')) < 3 or
+                              len(obter_posicoes_jogador(self.tabuleiro, 'O')) < 3)
 
-    escolha_jogador = input("Digite 1 ou 2: ").strip()
+    def jogada_computador(self):
+        if self.turno_atual != self.peca_computador:
+            return
+        movimento = obter_movimento_auto(self.tabuleiro, self.peca_computador, self.dificuldade)
+        if movimento is None:
+            messagebox.showinfo("Fim de Jogo", "Empate!")
+            self.desativar_tabuleiro()
+            return
+        if len(movimento) == 1:
+            coloca_peca(self.tabuleiro, self.peca_computador, movimento[0])
+        else:
+            move_peca(self.tabuleiro, movimento[0], movimento[1])
+        self.atualizar_tabuleiro()
+        vencedor = obter_ganhador(self.tabuleiro)
+        if vencedor != ' ':
+            messagebox.showinfo("Fim de Jogo", f"Jogador {vencedor} venceu!")
+            self.desativar_tabuleiro()
+            return
+        self.mudar_turno()
 
-    if escolha_jogador == "1":
-        jogador_escolhido = '[X]'
-    elif escolha_jogador == "2":
-        jogador_escolhido = '[O]'
-    else:
-        print("Escolha inválida! Jogando como X por defeito.")
-        jogador_escolhido = '[X]'
+    def desativar_tabuleiro(self):
+        for btn in self.buttons.values():
+            btn.config(state=tk.DISABLED)
 
-    print("\nEscolha a dificuldade:")
-    print("1 - Fácil")
-    print("2 - Normal")
-    print("3 - Difícil")
 
-    escolha_dificuldade = input("Digite 1, 2 ou 3: ").strip()
-
-    if escolha_dificuldade == "1":
-        dificuldade_escolhida = 'facil'
-    elif escolha_dificuldade == "2":
-        dificuldade_escolhida = 'normal'
-    elif escolha_dificuldade == "3":
-        dificuldade_escolhida = 'dificil'
-    else:
-        print("Escolha inválida! Dificuldade normal por defeito.")
-        dificuldade_escolhida = 'normal'
-
-    print()
-    resultado = moinho(jogador_escolhido, dificuldade_escolhida)
-    print(f"\n========== JOGO TERMINADO ==========")
-    print(f"O vencedor foi: {resultado}")
+if __name__ == '__main__':
+    app = JogoMoinhoApp()
+    app.mainloop()

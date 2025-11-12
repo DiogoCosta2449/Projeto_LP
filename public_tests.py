@@ -1,4 +1,4 @@
-from ProjetoCompletoPerplexity_2 import *
+from Código import *
 
 # imports para simular a stream de input/output
 import io

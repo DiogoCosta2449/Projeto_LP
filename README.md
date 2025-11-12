@@ -226,10 +226,4 @@ O vencedor foi: [X]
 
 Projeto desenvolvido para disciplina de Programação.
 
-## 📜 Licença
-
-Projeto educacional - Livre para uso e modificação.
-
----
-
 **Nota**: O projeto foi testado e validado com 100% de sucesso em todos os testes públicos! 🎉

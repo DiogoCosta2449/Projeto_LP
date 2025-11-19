@@ -268,7 +268,7 @@ class MoinhoGUI(tk.Tk):
         self.clear_widgets()
         self.label = tk.Label(self, text="Escolha o seu jogador", font=("Arial", 18), bg="black", fg="white")
         self.label.pack(pady=26)
-        self.x_btn = tk.Button(self, text="X (começa)", width=16, height=2, command=lambda: self.choose_player('X'))
+        self.x_btn = tk.Button(self, text="X", width=16, height=2, command=lambda: self.choose_player('X'))
         self.x_btn.pack(pady=6)
         self.o_btn = tk.Button(self, text="O", width=16, height=2, command=lambda: self.choose_player('O'))
         self.o_btn.pack(pady=6)
@@ -394,7 +394,11 @@ class MoinhoGUI(tk.Tk):
     def update_board(self):
         for p, btn in self.buttons.items():
             v = obter_peca(self.tabuleiro, p)
-            btn.configure(text=v, bg="white" if v in [' ',''] else ("#51a0ff" if v=='X' else "#ff5151"))
+            # Todas as peças com fundo igual (white)
+            if self.botao_selecionado == p:
+                btn.configure(text=v, bg="lightblue")
+            else:
+                btn.configure(text=v, bg="white")
             btn.config(state=tk.NORMAL if v == ' ' or v == self.peca_humano else tk.DISABLED)
         self.fase_colocacao = (len(obter_posicoes_jogador(self.tabuleiro, 'X')) < 3 or len(obter_posicoes_jogador(self.tabuleiro, 'O')) < 3)
         if self.fase_colocacao:

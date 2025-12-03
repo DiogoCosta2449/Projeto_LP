@@ -1,4 +1,4 @@
-from Jogar import *
+from moinho import *
 
 # imports para simular a stream de input/output
 import io

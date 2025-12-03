@@ -1,4 +1,4 @@
-from Codigo import *
+from Jogar import *
 
 # imports para simular a stream de input/output
 import io

@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import messagebox
 
 # ========== TADs e Funcoes Base ==========
 
@@ -7,10 +6,19 @@ def cria_posicao(c, l):
     if not isinstance(c, str) or not isinstance(l, str) or c not in ['a', 'b', 'c'] or l not in ['1', '2', '3']:
         raise ValueError('cria_posicao: argumentos invalidos')
     return (c, l)
+
 def obter_pos_c(p): return p[0]
 def obter_pos_l(p): return p[1]
-def eh_posicao(arg): return isinstance(arg, tuple) and len(arg) == 2 and isinstance(arg[0], str) and isinstance(arg[1], str) and arg[0] in ['a', 'b', 'c'] and arg[1] in ['1', '2', '3']
+
+def eh_posicao(arg):
+    return isinstance(arg, tuple) and len(arg) == 2 and \
+           isinstance(arg[0], str) and isinstance(arg[1], str) and \
+           arg[0] in ['a', 'b', 'c'] and arg[1] in ['1', '2', '3']
+
 def posicoes_iguais(p1, p2): return eh_posicao(p1) and eh_posicao(p2) and p1 == p2
+
+def posicao_para_str(p): return p[0] + p[1]
+
 def obter_posicoes_adjacentes(p):
     c, l = obter_pos_c(p), obter_pos_l(p)
     adjacencias_mapa = {
@@ -34,9 +42,19 @@ def cria_peca(s):
     if not isinstance(s, str) or s not in ['X', 'O', ' ']:
         raise ValueError('cria_peca: argumento invalido')
     return s
+
+def cria_copia_peca(j): return j
+
 def eh_peca(arg): return isinstance(arg, str) and arg in ['X', 'O', ' ']
+
 def pecas_iguais(j1, j2): return eh_peca(j1) and eh_peca(j2) and j1 == j2
-def peca_para_str(j): return f'[{j}]'
+
+def peca_para_str(j): return '[' + j + ']'
+
+def peca_para_inteiro(j):
+    if j == 'X': return 1
+    if j == 'O': return -1
+    return 0
 
 def cria_tabuleiro():
     tabuleiro = {}
@@ -46,26 +64,147 @@ def cria_tabuleiro():
     return tabuleiro
 
 def cria_copia_tabuleiro(t): return t.copy()
+
 def obter_peca(t, p): return t[p]
+
+def obter_vetor(t, s):
+    pecas = []
+    if s in ['1', '2', '3']:
+        for c in ['a', 'b', 'c']:
+            pecas.append(t[(c, s)])
+    elif s in ['a', 'b', 'c']:
+        for l in ['1', '2', '3']:
+            pecas.append(t[(s, l)])
+    return tuple(pecas)
+
 def coloca_peca(t, j, p): t[p] = j; return t
-def move_peca(t, p1, p2): peca = t[p1]; t[p1] = ' '; t[p2] = peca; return t
+
+def remove_peca(t, p): t[p] = ' '; return t
+
+def move_peca(t, p1, p2):
+    peca = t[p1]
+    t[p1] = ' '
+    t[p2] = peca
+    return t
+
+def eh_tabuleiro(arg):
+    if not isinstance(arg, dict) or len(arg) != 9:
+        return False
+    for c in ['a', 'b', 'c']:
+        for l in ['1', '2', '3']:
+            if (c, l) not in arg or not eh_peca(arg[(c, l)]):
+                return False
+    pecas_x = sum(1 for peca in arg.values() if peca == 'X')
+    pecas_o = sum(1 for peca in arg.values() if peca == 'O')
+    if pecas_x > 3 or pecas_o > 3:
+        return False
+    if abs(pecas_x - pecas_o) > 1:
+        return False
+    ganhador_x = _verificar_ganhador(arg, 'X')
+    ganhador_o = _verificar_ganhador(arg, 'O')
+    if ganhador_x and ganhador_o:
+        return False
+    return True
+
 def eh_posicao_livre(t, p): return t[p] == ' '
-def obter_posicoes_livres(t): return tuple([k for k,v in t.items() if v == ' '])
-def obter_posicoes_jogador(t, j): return tuple([k for k,v in t.items() if v == j])
+
+def tabuleiros_iguais(t1, t2): return eh_tabuleiro(t1) and eh_tabuleiro(t2) and t1 == t2
+
+def tabuleiro_para_str(t):
+    resultado = "   a   b   c\n"
+    for i, l in enumerate(['1', '2', '3']):
+        linha_peca = str(l) + " "
+        for j, c in enumerate(['a', 'b', 'c']):
+            peca = peca_para_str(t[(c, l)])
+            linha_peca += peca
+            if j < 2:
+                linha_peca += "-"
+        resultado += linha_peca
+        if i < 2:
+            if i == 0:
+                resultado += "\n   | \\ | / |\n"
+            else:
+                resultado += "\n   | / | \\ |\n"
+    return resultado
+
+def tuplo_para_tabuleiro(tuplo):
+    tabuleiro = {}
+    for i, linha in enumerate(tuplo):
+        l = str(i + 1)
+        for j, valor in enumerate(linha):
+            c = ['a', 'b', 'c'][j]
+            if valor == 1:
+                tabuleiro[(c, l)] = 'X'
+            elif valor == -1:
+                tabuleiro[(c, l)] = 'O'
+            else:
+                tabuleiro[(c, l)] = ' '
+    return tabuleiro
 
 def _verificar_ganhador(t, jogador):
     for l in ['1', '2', '3']:
-        if all(t[(c, l)] == jogador for c in ['a', 'b', 'c']): return True
+        if all(t[(c, l)] == jogador for c in ['a', 'b', 'c']):
+            return True
     for c in ['a', 'b', 'c']:
-        if all(t[(c, l)] == jogador for l in ['1', '2', '3']): return True
+        if all(t[(c, l)] == jogador for l in ['1', '2', '3']):
+            return True
     return False
 
 def obter_ganhador(t):
     if _verificar_ganhador(t, 'X'): return 'X'
-    elif _verificar_ganhador(t, 'O'): return 'O'
-    else: return ' '
+    if _verificar_ganhador(t, 'O'): return 'O'
+    return ' '
 
-# ========== Algoritmo de IA Completo com dificuldades ==========
+def obter_posicoes_livres(t):
+    posicoes_livres = []
+    for l in ['1', '2', '3']:
+        for c in ['a', 'b', 'c']:
+            if t[(c, l)] == ' ':
+                posicoes_livres.append((c, l))
+    return tuple(posicoes_livres)
+
+def obter_posicoes_jogador(t, j):
+    posicoes_jogador = []
+    for l in ['1', '2', '3']:
+        for c in ['a', 'b', 'c']:
+            if t[(c, l)] == j:
+                posicoes_jogador.append((c, l))
+    return tuple(posicoes_jogador)
+
+# ===========================
+# Funcoes adicionais texto (obrigatorias)
+# ===========================
+
+def obter_movimento_manual(t, j):
+    pecas_jogador = len(obter_posicoes_jogador(t, j))
+    if pecas_jogador < 3:
+        entrada = input("Turno do jogador. Escolha uma posicao: ")
+        if len(entrada) != 2 or entrada[0] not in ['a', 'b', 'c'] or entrada[1] not in ['1', '2', '3']:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        pos = cria_posicao(entrada[0], entrada[1])
+        if not eh_posicao_livre(t, pos):
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        return (pos,)
+    else:
+        entrada = input("Turno do jogador. Escolha um movimento: ")
+        if len(entrada) != 4:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        try:
+            pos_origem = cria_posicao(entrada[0], entrada[1])
+            pos_destino = cria_posicao(entrada[2], entrada[3])
+        except:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        if obter_peca(t, pos_origem) != j:
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        if not posicoes_iguais(pos_origem, pos_destino) and not eh_posicao_livre(t, pos_destino):
+            raise ValueError('obter_movimento_manual: escolha invalida')
+        if not posicoes_iguais(pos_origem, pos_destino):
+            adjacentes = obter_posicoes_adjacentes(pos_origem)
+            if pos_destino not in adjacentes:
+                raise ValueError('obter_movimento_manual: escolha invalida')
+        return (pos_origem, pos_destino)
+
+# ========== IA completa (como ja tinhas) ==========
 
 def obter_movimento_auto(t, j, dificuldade):
     pecas_jogador = len(obter_posicoes_jogador(t, j))
@@ -247,7 +386,41 @@ def _avaliar_sequencia(seq, jogador, adversario):
     return pontuacao
 
 # ===========================
-# INTERFACE TKINTER
+# Funcao principal texto
+# ===========================
+
+def moinho(jogador_humano, dificuldade):
+    if jogador_humano not in ['[X]', '[O]'] or dificuldade not in ['facil', 'normal', 'dificil']:
+        raise ValueError('moinho: argumentos invalidos')
+    peca_humano = jogador_humano[1]
+    peca_computador = 'O' if peca_humano == 'X' else 'X'
+    print("Bem-vindo ao JOGO DO MOINHO. Nivel de dificuldade " + dificuldade + ".")
+    t = cria_tabuleiro()
+    print(tabuleiro_para_str(t))
+    turno_atual = 'X'
+    while True:
+        if turno_atual == peca_humano:
+            movimento = obter_movimento_manual(t, peca_humano)
+            if len(movimento) == 1:
+                coloca_peca(t, peca_humano, movimento[0])
+            else:
+                move_peca(t, movimento[0], movimento[1])
+            print(tabuleiro_para_str(t))
+        else:
+            print("Turno do computador (" + dificuldade + "):")
+            movimento = obter_movimento_auto(t, peca_computador, dificuldade)
+            if len(movimento) == 1:
+                coloca_peca(t, peca_computador, movimento[0])
+            else:
+                move_peca(t, movimento[0], movimento[1])
+            print(tabuleiro_para_str(t))
+        ganhador = obter_ganhador(t)
+        if ganhador != ' ':
+            return peca_para_str(ganhador)
+        turno_atual = 'O' if turno_atual == 'X' else 'X'
+
+# ===========================
+# INTERFACE TKINTER (opcional)
 # ===========================
 
 class MoinhoGUI(tk.Tk):
@@ -301,7 +474,7 @@ class MoinhoGUI(tk.Tk):
 
     def setup_board(self):
         self.clear_widgets()
-        self.info = tk.Label(self, text=f"Turno: {self.turno_atual} | Dif: {self.dificuldade}", font=("Arial", 14), bg="black", fg="white")
+        self.info = tk.Label(self, text="Turno: " + self.turno_atual + " | Dif: " + self.dificuldade, font=("Arial", 14), bg="black", fg="white")
         self.info.pack(pady=2)
         self.canvas = tk.Canvas(self, width=420, height=420, bg="black", highlightthickness=0)
         self.canvas.pack()
@@ -313,7 +486,7 @@ class MoinhoGUI(tk.Tk):
         for (c, l), (x, y) in pos_btn_xy.items():
             btn = tk.Button(self, text="", font=("Arial", 18,"bold"), width=2, height=1, bg="white",
                             command=lambda p=(c,l): self.cell_click(p))
-            btn_window = self.canvas.create_window(x, y, window=btn, width=53, height=53)
+            self.canvas.create_window(x, y, window=btn, width=53, height=53)
             self.buttons[(c,l)] = btn
         self.status = tk.Label(self, text="", font=("Arial", 12), fg="yellow", bg="black")
         self.status.pack(pady=8)
@@ -323,15 +496,12 @@ class MoinhoGUI(tk.Tk):
 
     def draw_board_lines(self):
         c = self.canvas
-        # Linhas horizontais
         c.create_line(60,60, 360,60, fill='grey', width=5)
         c.create_line(60,210, 360,210, fill='grey', width=5)
         c.create_line(60,360, 360,360, fill='grey', width=5)
-        # Linhas verticais
         c.create_line(60,60, 60,360, fill='grey', width=5)
         c.create_line(210,60, 210,360, fill='grey', width=5)
         c.create_line(360,60, 360,360, fill='grey', width=5)
-        # Diagonais
         c.create_line(60,60, 210,210, fill='grey', dash=(5,4), width=2)
         c.create_line(360,60, 210,210, fill='grey', dash=(5,4), width=2)
         c.create_line(60,360, 210,210, fill='grey', dash=(5,4), width=2)
@@ -347,7 +517,7 @@ class MoinhoGUI(tk.Tk):
             coloca_peca(self.tabuleiro, self.peca_humano, pos)
             self.update_board()
             if obter_ganhador(self.tabuleiro) != ' ':
-                self.end_game(f"Jogador {obter_ganhador(self.tabuleiro)} venceu!")
+                self.end_game("Jogador " + obter_ganhador(self.tabuleiro) + " venceu!")
                 return
             self.switch_turn()
             self.after(700, self.computer_move)
@@ -367,7 +537,7 @@ class MoinhoGUI(tk.Tk):
                     self.botao_selecionado = None
                     self.update_board()
                     if obter_ganhador(self.tabuleiro) != ' ':
-                        self.end_game(f"Jogador {obter_ganhador(self.tabuleiro)} venceu!")
+                        self.end_game("Jogador " + obter_ganhador(self.tabuleiro) + " venceu!")
                         return
                     self.switch_turn()
                     self.after(700, self.computer_move)
@@ -387,7 +557,7 @@ class MoinhoGUI(tk.Tk):
             move_peca(self.tabuleiro, mov[0], mov[1])
         self.update_board()
         if obter_ganhador(self.tabuleiro) != ' ':
-            self.end_game(f"Jogador {obter_ganhador(self.tabuleiro)} venceu!")
+            self.end_game("Jogador " + obter_ganhador(self.tabuleiro) + " venceu!")
             return
         self.switch_turn()
 
@@ -407,7 +577,7 @@ class MoinhoGUI(tk.Tk):
 
     def switch_turn(self):
         self.turno_atual = 'O' if self.turno_atual == 'X' else 'X'
-        self.info['text'] = f"Turno: {self.turno_atual} | Dif: {self.dificuldade}"
+        self.info['text'] = "Turno: " + self.turno_atual + " | Dif: " + self.dificuldade
 
     def end_game(self, msg):
         for b in self.buttons.values():
@@ -426,5 +596,7 @@ class MoinhoGUI(tk.Tk):
         self.start_screen()
 
 if __name__ == "__main__":
+    # Para testes automaticos, eles vao importar as funcoes acima.
+    # So corre a GUI quando executares o ficheiro diretamente.
     app = MoinhoGUI()
     app.mainloop()

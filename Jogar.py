@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 
-# ========== TADs e Funções Base ==========
+# ========== TADs e Funcoes Base ==========
 
 def cria_posicao(c, l):
     if not isinstance(c, str) or not isinstance(l, str) or c not in ['a', 'b', 'c'] or l not in ['1', '2', '3']:
@@ -283,7 +283,7 @@ class MoinhoGUI(tk.Tk):
         self.label = tk.Label(self, text="Escolha a dificuldade", font=("Arial", 18), bg="black", fg="white")
         self.label.pack(pady=26)
         self.btns = []
-        for label, diff in [("Fácil", "facil"), ("Normal", "normal"), ("Difícil", "dificil")]:
+        for label, diff in [("Facil", "facil"), ("Normal", "normal"), ("Dificil", "dificil")]:
             btn = tk.Button(self, text=label, width=16, height=2, command=lambda d=diff: self.start_game(d))
             btn.pack(pady=6)
             self.btns.append(btn)
@@ -331,7 +331,7 @@ class MoinhoGUI(tk.Tk):
         c.create_line(60,60, 60,360, fill='grey', width=5)
         c.create_line(210,60, 210,360, fill='grey', width=5)
         c.create_line(360,60, 360,360, fill='grey', width=5)
-        # Diagonais (para o efeito visual do moinho)
+        # Diagonais
         c.create_line(60,60, 210,210, fill='grey', dash=(5,4), width=2)
         c.create_line(360,60, 210,210, fill='grey', dash=(5,4), width=2)
         c.create_line(60,360, 210,210, fill='grey', dash=(5,4), width=2)
@@ -357,7 +357,7 @@ class MoinhoGUI(tk.Tk):
                     self.botao_selecionado = pos
                     self.buttons[pos].configure(bg="lightblue")
                 else:
-                    self.status['text'] = "Clique numa peça sua para mover."
+                    self.status['text'] = "Clique numa peca sua para mover."
             else:
                 if pos == self.botao_selecionado:
                     self.buttons[self.botao_selecionado].configure(bg="white")
@@ -372,7 +372,7 @@ class MoinhoGUI(tk.Tk):
                     self.switch_turn()
                     self.after(700, self.computer_move)
                 else:
-                    self.status['text'] = "Movimento inválido!"
+                    self.status['text'] = "Movimento invalido!"
                     self.buttons[self.botao_selecionado].configure(bg="white")
                     self.botao_selecionado = None
 
@@ -394,7 +394,6 @@ class MoinhoGUI(tk.Tk):
     def update_board(self):
         for p, btn in self.buttons.items():
             v = obter_peca(self.tabuleiro, p)
-            # Todas as peças com fundo igual (white)
             if self.botao_selecionado == p:
                 btn.configure(text=v, bg="lightblue")
             else:
@@ -402,9 +401,9 @@ class MoinhoGUI(tk.Tk):
             btn.config(state=tk.NORMAL if v == ' ' or v == self.peca_humano else tk.DISABLED)
         self.fase_colocacao = (len(obter_posicoes_jogador(self.tabuleiro, 'X')) < 3 or len(obter_posicoes_jogador(self.tabuleiro, 'O')) < 3)
         if self.fase_colocacao:
-            self.status['text'] = "Coloque as peças no tabuleiro."
+            self.status['text'] = "Coloque as pecas no tabuleiro."
         else:
-            self.status['text'] = "Clique na sua peça e mova para casa adjacente."
+            self.status['text'] = "Clique na sua peca e mova para casa adjacente."
 
     def switch_turn(self):
         self.turno_atual = 'O' if self.turno_atual == 'X' else 'X'

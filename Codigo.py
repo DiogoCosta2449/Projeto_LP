@@ -207,7 +207,7 @@ def obter_posicoes_jogador(t, j):
     return tuple(posicoes_jogador)
 
 # ===========================
-# Funções Adicionais
+# Funcoes Adicionais
 # ===========================
 
 def obter_movimento_manual(t, j):
@@ -429,7 +429,7 @@ def _avaliar_sequencia(seq, jogador, adversario):
     return pontuacao
 
 # ===========================
-# Função Principal
+# Funcao Principal
 # ===========================
 
 def moinho(jogador_humano, dificuldade):
@@ -468,8 +468,8 @@ def moinho(jogador_humano, dificuldade):
 if __name__ == "__main__":
     print("\n===== JOGO DO MOINHO =====\n")
     print("Escolha o seu jogador:")
-    print("1 - X (começa primeiro)")
-    print("2 - O (computador começa)")
+    print("1 - X (comeca primeiro)")
+    print("2 - O (computador comeca)")
 
     escolha_jogador = input("Digite 1 ou 2: ").strip()
 
@@ -478,13 +478,13 @@ if __name__ == "__main__":
     elif escolha_jogador == "2":
         jogador_escolhido = '[O]'
     else:
-        print("Escolha inválida! Jogando como X por defeito.")
+        print("Escolha invalida! Jogando como X por defeito.")
         jogador_escolhido = '[X]'
 
     print("\nEscolha a dificuldade:")
-    print("1 - Fácil")
+    print("1 - Facil")
     print("2 - Normal")
-    print("3 - Difícil")
+    print("3 - Dificil")
 
     escolha_dificuldade = input("Digite 1, 2 ou 3: ").strip()
 
@@ -495,7 +495,7 @@ if __name__ == "__main__":
     elif escolha_dificuldade == "3":
         dificuldade_escolhida = 'dificil'
     else:
-        print("Escolha inválida! Dificuldade normal por defeito.")
+        print("Escolha invalida! Dificuldade normal por defeito.")
         dificuldade_escolhida = 'normal'
 
     print()

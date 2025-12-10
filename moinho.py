@@ -1,7 +1,5 @@
 import tkinter as tk
 
-# ========== TADs e Funcoes Base ==========
-
 def cria_posicao(c, l):
     if not isinstance(c, str) or not isinstance(l, str) or c not in ['a', 'b', 'c'] or l not in ['1', '2', '3']:
         raise ValueError('cria_posicao: argumentos invalidos')
@@ -171,10 +169,6 @@ def obter_posicoes_jogador(t, j):
                 posicoes_jogador.append((c, l))
     return tuple(posicoes_jogador)
 
-# ===========================
-# Funcoes adicionais texto (obrigatorias)
-# ===========================
-
 def obter_movimento_manual(t, j):
     pecas_jogador = len(obter_posicoes_jogador(t, j))
     if pecas_jogador < 3:
@@ -203,8 +197,6 @@ def obter_movimento_manual(t, j):
             if pos_destino not in adjacentes:
                 raise ValueError('obter_movimento_manual: escolha invalida')
         return (pos_origem, pos_destino)
-
-# ========== IA completa (como ja tinhas) ==========
 
 def obter_movimento_auto(t, j, dificuldade):
     pecas_jogador = len(obter_posicoes_jogador(t, j))
@@ -385,10 +377,6 @@ def _avaliar_sequencia(seq, jogador, adversario):
         pontuacao -= 100
     return pontuacao
 
-# ===========================
-# Funcao principal texto
-# ===========================
-
 def moinho(jogador_humano, dificuldade):
     if jogador_humano not in ['[X]', '[O]'] or dificuldade not in ['facil', 'normal', 'dificil']:
         raise ValueError('moinho: argumentos invalidos')
@@ -418,10 +406,6 @@ def moinho(jogador_humano, dificuldade):
         if ganhador != ' ':
             return peca_para_str(ganhador)
         turno_atual = 'O' if turno_atual == 'X' else 'X'
-
-# ===========================
-# INTERFACE TKINTER (opcional)
-# ===========================
 
 class MoinhoGUI(tk.Tk):
     def __init__(self):
@@ -596,7 +580,5 @@ class MoinhoGUI(tk.Tk):
         self.start_screen()
 
 if __name__ == "__main__":
-    # Para testes automaticos, eles vao importar as funcoes acima.
-    # So corre a GUI quando executares o ficheiro diretamente.
     app = MoinhoGUI()
     app.mainloop()
